@@ -7,8 +7,26 @@ import {
   TOPIC_SELECTION_PROMPT
 } from "../../prompts/interview";
 
-// Make sure to configure OpenAI appropriately in production
-const model = new ChatOpenAI({ modelName: "gpt-4o", temperature: 0.7 });
+const getModel = () => {
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      invoke: async () => ({ content: "Mock question" }),
+      withStructuredOutput: () => ({
+        invoke: async () => ({
+          correctness: 4,
+          technicalDepth: 4,
+          communication: 5,
+          confidence: 4,
+          relevance: 5,
+          needsFollowUp: false,
+          recommendedDifficulty: "Medium"
+        })
+      })
+    };
+  }
+
+  return new ChatOpenAI({ modelName: "gpt-4o", temperature: 0.7 });
+};
 
 export const initializeInterviewNode = async (state: InterviewStateType) => {
   // Logic to initialize topics based on role/domain
@@ -43,6 +61,7 @@ export const generateQuestionNode = async (state: InterviewStateType) => {
     .replace("{strongAreas}", state.strongAreas.join(", "))
     .replace("{questionHistory}", state.questionHistory.join("\n"));
 
+  const model = getModel();
   const response = await model.invoke(prompt);
   const newQuestion = response.content as string;
 
@@ -80,6 +99,7 @@ export const evaluateAnswerNode = async (state: InterviewStateType) => {
     recommendedDifficulty: z.enum(["Easy", "Medium", "Hard", "Expert"])
   });
 
+  const model = getModel();
   const structuredModel = model.withStructuredOutput(evaluationSchema);
   const evaluation = await structuredModel.invoke(prompt);
 

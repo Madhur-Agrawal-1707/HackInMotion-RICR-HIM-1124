@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "The Resume Intelligence Module is a core component of the AI Resume Analyzer & Multi-Agent Interview Platform.",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
@@ -31,6 +31,7 @@
     "multer": "^2.2.0",
     "pdfkit": "^0.19.1",
     "redis": "^6.2.1",
+    "uuid": "^14.0.1",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
   },
@@ -47,6 +48,7 @@
     "@types/node": "^26.2.0",
     "@types/pdfkit": "^0.17.6",
     "@types/supertest": "^7.2.1",
+    "@types/uuid": "^11.0.0",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",

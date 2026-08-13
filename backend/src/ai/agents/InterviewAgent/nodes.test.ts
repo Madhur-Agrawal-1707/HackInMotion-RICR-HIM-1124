@@ -1,11 +1,3 @@
-import { 
-  initializeInterviewNode, 
-  selectTopicNode, 
-  determineDifficultyNode, 
-  selectNextTopicNode 
-} from './nodes';
-import { InterviewStateType } from './state';
-
 jest.mock('@langchain/openai', () => {
   return {
     ChatOpenAI: jest.fn().mockImplementation(() => {
@@ -27,8 +19,15 @@ jest.mock('@langchain/openai', () => {
   };
 });
 
-// Need to import after mock to use the mocked model
-import { generateQuestionNode, evaluateAnswerNode } from './nodes';
+import { 
+  initializeInterviewNode, 
+  selectTopicNode, 
+  determineDifficultyNode, 
+  selectNextTopicNode,
+  generateQuestionNode,
+  evaluateAnswerNode
+} from './nodes';
+import { InterviewStateType } from './state';
 
 describe('InterviewAgent Nodes', () => {
   
