@@ -1,5 +1,5 @@
 import React from 'react';
-import { IMilestone } from '../types/roadmap.types';
+import type { IMilestone } from '../types/roadmap.types';
 
 interface MilestoneCardProps {
   milestone: IMilestone;

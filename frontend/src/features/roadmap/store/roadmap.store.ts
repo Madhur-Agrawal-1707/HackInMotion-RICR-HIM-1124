@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { IRoadmap } from '../types/roadmap.types';
+import type { IRoadmap } from '../types/roadmap.types';
 
 interface RoadmapState {
   activeRoadmap: IRoadmap | null;

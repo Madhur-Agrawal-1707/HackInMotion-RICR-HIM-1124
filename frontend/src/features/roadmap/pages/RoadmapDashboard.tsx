@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { roadmapApi } from '../api/roadmap.api';
-import { IRoadmap } from '../types/roadmap.types';
+import type { IRoadmap } from '../types/roadmap.types';
 
 export const RoadmapDashboard: React.FC = () => {
   const [roadmaps, setRoadmaps] = useState<IRoadmap[]>([]);

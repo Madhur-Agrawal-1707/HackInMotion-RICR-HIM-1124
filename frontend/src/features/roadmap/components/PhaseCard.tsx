@@ -1,5 +1,5 @@
 import React from 'react';
-import { IPhase } from '../types/roadmap.types';
+import type { IPhase } from '../types/roadmap.types';
 
 interface PhaseCardProps {
   phase: IPhase;

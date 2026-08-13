@@ -1,5 +1,5 @@
 import React from 'react';
-import { IProject } from '../types/roadmap.types';
+import type { IProject } from '../types/roadmap.types';
 
 interface ProjectCardProps {
   project: IProject;

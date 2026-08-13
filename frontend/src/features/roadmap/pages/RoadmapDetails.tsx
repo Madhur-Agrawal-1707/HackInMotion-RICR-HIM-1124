@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { roadmapApi } from '../api/roadmap.api';
-import { IRoadmap } from '../types/roadmap.types';
+import type { IRoadmap } from '../types/roadmap.types';
 import { ProgressCard } from '../components/ProgressCard';
 import { SkillGapCard } from '../components/SkillGapCard';
 import { RoadmapTimeline } from '../components/RoadmapTimeline';
@@ -35,7 +35,7 @@ export const RoadmapDetails: React.FC<RoadmapDetailsProps> = ({ roadmapId }) => 
   if (isLoading) return <div className="p-8 text-center">Loading roadmap details...</div>;
   if (!roadmap) return <div className="p-8 text-center">Roadmap not found.</div>;
 
-  const handleUpdateMilestoneStatus = async (milestoneId: string, status: string) => {
+  const handleUpdateMilestoneStatus = async (milestoneId: string, _status: string) => {
     // Optimistic UI update could be added here
     try {
       const updated = await roadmapApi.updateProgress(roadmap._id, { completedMilestoneId: milestoneId });
