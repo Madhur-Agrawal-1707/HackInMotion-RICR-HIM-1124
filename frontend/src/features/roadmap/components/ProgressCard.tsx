@@ -1,5 +1,5 @@
 import React from 'react';
-import { IRoadmapProgress } from '../types/roadmap.types';
+import type { IRoadmapProgress } from '../types/roadmap.types';
 
 interface ProgressCardProps {
   progress: IRoadmapProgress;

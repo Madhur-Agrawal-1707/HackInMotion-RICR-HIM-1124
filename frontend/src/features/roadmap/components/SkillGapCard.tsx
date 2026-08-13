@@ -1,5 +1,5 @@
 import React from 'react';
-import { ISkillGap } from '../types/roadmap.types';
+import type { ISkillGap } from '../types/roadmap.types';
 
 interface SkillGapCardProps {
   gap: ISkillGap;
