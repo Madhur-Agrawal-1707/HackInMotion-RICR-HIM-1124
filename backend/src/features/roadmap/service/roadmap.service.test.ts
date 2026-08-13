@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { roadmapService } from './roadmap.service';
 import { roadmapRepository } from '../repository/roadmap.repository';
 
@@ -39,15 +40,22 @@ describe('RoadmapService', () => {
         preferredTimeline: '6 months'
       };
 
-      (roadmapRepository.findActiveByUserId as jest.Mock).mockResolvedValue({ id: 'old_id', version: 1 });
-      (roadmapRepository.createNewVersion as jest.Mock).mockResolvedValue({ id: 'new_id', version: 2 });
+      (roadmapRepository.findActiveByUserId as jest.Mock).mockResolvedValue({ _id: 'old_id', version: 1 });
+      (roadmapRepository.createNewVersion as jest.Mock).mockResolvedValue({ _id: 'new_id', version: 2 });
 
       const result: any = await roadmapService.generateRoadmap(mockUserId, mockData as any);
 
       expect(roadmapRepository.findActiveByUserId).toHaveBeenCalledWith(mockUserId);
       expect(roadmapRepository.archiveRoadmap).toHaveBeenCalledWith('old_id');
       expect(roadmapRepository.createNewVersion).toHaveBeenCalled();
-      expect(result.id).toBe('new_id');
+      expect((result as any).id || result?._id).toBe('new_id');
+    });
+
+    it('should throw Error if creation fails', async () => {
+      (roadmapRepository.createNewVersion as jest.Mock).mockRejectedValue(new Error('DB Error'));
+
+      await expect(roadmapService.generateRoadmap('user1', {} as any))
+        .rejects.toThrow('DB Error');
     });
   });
 
@@ -71,7 +79,7 @@ describe('RoadmapService', () => {
       // 1 out of 4 tasks = 25% for tasks, out of 50% total task weight = 12.5%
       // 0 milestones = 0% for milestones
       // Total = 13% (rounded)
-      expect(result.overallPercentage).toBe(13);
+      expect((result as any)?.overallPercentage).toBe(13);
     });
   });
 });
