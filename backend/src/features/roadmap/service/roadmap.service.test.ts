@@ -47,7 +47,7 @@ describe('RoadmapService', () => {
       expect(roadmapRepository.findActiveByUserId).toHaveBeenCalledWith(mockUserId);
       expect(roadmapRepository.archiveRoadmap).toHaveBeenCalledWith('old_id');
       expect(roadmapRepository.createNewVersion).toHaveBeenCalled();
-      expect(result.id).toBe('new_id');
+      expect((result as any).id).toBe('new_id');
     });
   });
 
@@ -71,7 +71,7 @@ describe('RoadmapService', () => {
       // 1 out of 4 tasks = 25% for tasks, out of 50% total task weight = 12.5%
       // 0 milestones = 0% for milestones
       // Total = 13% (rounded)
-      expect(result.overallPercentage).toBe(13);
+      expect((result as any).overallPercentage).toBe(13);
     });
   });
 });
