@@ -50,7 +50,7 @@ export class RoadmapService {
     let previousVersion = 0;
     if (activeRoadmap) {
       previousVersion = activeRoadmap.version;
-      await roadmapRepository.archiveRoadmap(activeRoadmap._id as unknown as string);
+      await roadmapRepository.archiveRoadmap((activeRoadmap as any).id || (activeRoadmap as any)._id);
     }
 
     // 5. Persist the new roadmap
