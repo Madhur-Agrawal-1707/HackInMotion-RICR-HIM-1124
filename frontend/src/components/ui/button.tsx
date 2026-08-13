@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "../../lib/utils"
+import * as React from 'react';
+import { cn } from '../../lib/utils';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,26 +13,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50",
-          {
-            'bg-gray-900 text-gray-50 shadow hover:bg-gray-900/90': variant === 'default',
-            'bg-red-500 text-gray-50 shadow-sm hover:bg-red-500/90': variant === 'destructive',
-            'border border-gray-200 bg-white shadow-sm hover:bg-gray-100 hover:text-gray-900': variant === 'outline',
-            'bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-100/80': variant === 'secondary',
-            'hover:bg-gray-100 hover:text-gray-900': variant === 'ghost',
-            'text-gray-900 underline-offset-4 hover:underline': variant === 'link',
-            'h-9 px-4 py-2': size === 'default',
-            'h-8 rounded-md px-3 text-xs': size === 'sm',
-            'h-10 rounded-md px-8': size === 'lg',
-            'h-9 w-9': size === 'icon',
-          },
-          className
+          'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+          variant === 'default' && 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+          variant === 'destructive' && 'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90',
+          variant === 'outline' && 'border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground',
+          variant === 'secondary' && 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
+          variant === 'ghost' && 'hover:bg-accent hover:text-accent-foreground',
+          variant === 'link' && 'text-primary underline-offset-4 hover:underline',
+          size === 'default' && 'h-9 px-4 py-2',
+          size === 'sm' && 'h-8 rounded-md px-3 text-xs',
+          size === 'lg' && 'h-10 rounded-md px-8',
+          size === 'icon' && 'h-9 w-9',
+          className,
         )}
         {...props}
       />
-    )
-  }
-)
-Button.displayName = "Button"
+    );
+  },
+);
 
-export { Button }
+Button.displayName = 'Button';
+
+export { Button };
