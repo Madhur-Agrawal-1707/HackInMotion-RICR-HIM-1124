@@ -17,7 +17,7 @@ export class AuthController {
       res.status(201).json({
         success: true,
         message: 'Registration successful',
-        data: { user: result.user },
+        data: { user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken },
       });
     } catch (error) {
       next(error);
@@ -33,7 +33,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Login successful',
-        data: { user: result.user },
+        data: { user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken },
       });
     } catch (error) {
       next(error);
@@ -49,7 +49,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Google login successful',
-        data: { user: result.user },
+        data: { user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken },
       });
     } catch (error) {
       next(error);
@@ -58,7 +58,7 @@ export class AuthController {
 
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const refreshToken = req.cookies.refreshToken;
+      const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
       const result = await this.authService.refreshTokens(refreshToken);
 
       this.setCookies(res, result.accessToken, result.refreshToken);
@@ -66,7 +66,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Tokens refreshed successfully',
-        data: null,
+        data: { accessToken: result.accessToken, refreshToken: result.refreshToken },
       });
     } catch (error) {
       next(error);
@@ -136,14 +136,14 @@ export class AuthController {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }

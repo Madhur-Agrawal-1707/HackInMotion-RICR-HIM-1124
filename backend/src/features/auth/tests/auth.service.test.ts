@@ -3,18 +3,11 @@ import { UserRepository } from '../../user/repository/user.repository';
 import { PasswordService } from '../../../utils/password.service';
 import { JwtService } from '../../../utils/jwt.service';
 import { ValidationError, UnauthorizedError } from '../../../utils/errors';
-import { redisClient } from '../../../database/redis/connection';
 import mongoose from 'mongoose';
 
 jest.mock('../../user/repository/user.repository');
 jest.mock('../../../utils/password.service');
 jest.mock('../../../utils/jwt.service');
-jest.mock('../../../database/redis/connection', () => ({
-  redisClient: {
-    set: jest.fn(),
-    del: jest.fn(),
-  }
-}));
 
 describe('AuthService', () => {
   let authService: AuthService;

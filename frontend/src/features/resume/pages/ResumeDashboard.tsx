@@ -1,13 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useResumes } from "../hooks/useResume";
-import { FileText, Upload, Plus, History, Activity, AlertCircle } from "lucide-react";
+import { FileText, Upload, Plus, History, Activity, AlertCircle, ArrowLeft } from "lucide-react";
 
 export const ResumeDashboard: React.FC = () => {
   const { data: resumes, isLoading, error } = useResumes();
 
   return (
     <div className="container mx-auto py-8 max-w-6xl space-y-8">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors -ml-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Dashboard
+      </Link>
+      
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Resume Intelligence</h1>
@@ -24,7 +32,7 @@ export const ResumeDashboard: React.FC = () => {
             Upload PDF
           </Link>
           <Link
-            to="/resume/builder"
+            to="/resume/build/new"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -106,7 +114,7 @@ export const ResumeDashboard: React.FC = () => {
                   Upload Resume
                 </Link>
                 <Link
-                  to="/resume/builder"
+                  to="/resume/build/new"
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                 >
                   Build New
@@ -118,7 +126,7 @@ export const ResumeDashboard: React.FC = () => {
               {resumes.map((resume) => (
                 <Link
                   key={resume._id}
-                  to={`/resume/${resume._id}`}
+                  to={`/resume/build/${resume._id}`}
                   className="group block bg-card rounded-xl border border-border/50 p-5 hover:border-primary/50 transition-colors hover:shadow-sm"
                 >
                   <div className="flex justify-between items-start mb-4">

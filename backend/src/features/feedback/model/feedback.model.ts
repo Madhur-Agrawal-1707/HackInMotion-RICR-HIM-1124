@@ -65,7 +65,7 @@ const FeedbackReportSchema: Schema = new Schema(
 );
 
 // Indexes for fast retrieval
-FeedbackReportSchema.index({ interviewId: 1 });
+// FeedbackReportSchema.index({ interviewId: 1 }); // duplicate of unique: true in schema
 FeedbackReportSchema.index({ userId: 1 });
 
 export const FeedbackReport = mongoose.model<IFeedbackReport>('FeedbackReport', FeedbackReportSchema);

@@ -25,7 +25,7 @@ const CompanySchema = new Schema<ICompany>(
   { timestamps: true }
 );
 
-CompanySchema.index({ slug: 1 });
+// CompanySchema.index({ slug: 1 }); // duplicate of unique: true in schema
 CompanySchema.index({ name: 'text' });
 
 export const Company = mongoose.model<ICompany>('Company', CompanySchema);

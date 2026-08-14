@@ -5,9 +5,14 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.config';
 import { connectDB } from './database/mongodb/connection';
-import { connectRedis } from './database/redis/connection';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
+import { resumeRoutes } from './features/resume';
+// import { roadmapRoutes } from './features/roadmap'; // assuming it's exported
+import { roadmapRouter as roadmapRoutes } from './features/roadmap/routes/roadmap.routes';
+import { interviewRoutes } from './features/interview';
+import companyRoutes from './features/company/routes/company.routes';
+import feedbackRoutes from './features/feedback/routes/feedback.routes';
 import authRoutes from './features/auth/routes/auth.routes';
 import userRoutes from './features/user/routes/user.routes';
 
@@ -17,7 +22,13 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin || [env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174'].includes(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );
@@ -48,6 +59,11 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/resume', resumeRoutes);
+app.use('/api/roadmap', roadmapRoutes);
+app.use('/api/interview', interviewRoutes);
+app.use('/api/company', companyRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -55,7 +71,6 @@ app.use(errorHandler);
 // Start Server
 const startServer = async () => {
   await connectDB();
-  await connectRedis();
 
   app.listen(env.PORT, () => {
     logger.info(`🚀 Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);

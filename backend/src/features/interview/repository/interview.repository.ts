@@ -11,6 +11,10 @@ export class InterviewRepository {
     return await InterviewSessionModel.findById(sessionId);
   }
 
+  async getSessionsByUserId(userId: string): Promise<IInterviewSessionDocument[]> {
+    return await InterviewSessionModel.find({ userId }).sort({ createdAt: -1 });
+  }
+
   async addQuestion(sessionId: string, question: IQuestion): Promise<IInterviewSessionDocument | null> {
     return await InterviewSessionModel.findByIdAndUpdate(
       sessionId,

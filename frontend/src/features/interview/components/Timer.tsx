@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react';
 import { useInterviewStore } from '../store/interviewStore';
 
-export const Timer: React.FC = () => {
+export const Timer: React.FC<{ onTimeUp?: () => void }> = ({ onTimeUp }) => {
   const { timeRemaining, setTimeRemaining } = useInterviewStore();
 
   useEffect(() => {
-    if (timeRemaining <= 0) return;
+    if (timeRemaining <= 0) {
+      if (onTimeUp) onTimeUp();
+      return;
+    }
     const interval = setInterval(() => {
       setTimeRemaining(timeRemaining - 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [timeRemaining, setTimeRemaining]);
+  }, [timeRemaining, setTimeRemaining, onTimeUp]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');

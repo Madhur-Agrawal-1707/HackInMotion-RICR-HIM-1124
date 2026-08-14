@@ -8,9 +8,10 @@ import {
 } from "../../prompts/interview";
 
 const getModel = () => {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.warn("No OPENROUTER_API_KEY found, using mock model.");
     return {
-      invoke: async () => ({ content: "Mock question" }),
+      invoke: async () => ({ content: "Mock question from OpenRouter?" }),
       withStructuredOutput: () => ({
         invoke: async () => ({
           correctness: 4,
@@ -19,13 +20,25 @@ const getModel = () => {
           confidence: 4,
           relevance: 5,
           needsFollowUp: false,
-          recommendedDifficulty: "Medium"
+          recommendedDifficulty: "Medium",
+          timeLimit: 60
         })
       })
-    };
+    } as any;
   }
 
-  return new ChatOpenAI({ modelName: "gpt-4o", temperature: 0.7 });
+  return new ChatOpenAI({ 
+    modelName: "openai/gpt-oss-120b",
+    temperature: 0.7,
+    openAIApiKey: process.env.OPENROUTER_API_KEY,
+    configuration: {
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        "HTTP-Referer": "http://localhost:5176",
+        "X-Title": "HackInMotion",
+      }
+    }
+  });
 };
 
 export const initializeInterviewNode = async (state: InterviewStateType) => {
@@ -59,16 +72,29 @@ export const generateQuestionNode = async (state: InterviewStateType) => {
     .replace("{difficulty}", state.difficulty)
     .replace("{weakAreas}", state.weakAreas.join(", "))
     .replace("{strongAreas}", state.strongAreas.join(", "))
-    .replace("{questionHistory}", state.questionHistory.join("\n"));
+    .replace("{qaHistory}", state.questionHistory.map((q, i) => `Q: ${q}\nA: ${state.answerHistory[i]?.text || 'No answer'}`).join("\n\n"));
+
+  const questionSchema = z.object({
+    questionText: z.string().describe("The interview question text."),
+    timeLimit: z.number().describe("The recommended time limit to answer this question in seconds (e.g. 60 for easy, 120 for medium, 180+ for long).")
+  });
 
   const model = getModel();
-  const response = await model.invoke(prompt);
-  const newQuestion = response.content as string;
+  const structuredModel = model.withStructuredOutput(questionSchema);
+  const response = await structuredModel.invoke(prompt);
 
+  const newQuestion = response.questionText;
+  const timeLimit = response.timeLimit;
+
+  // We temporarily store timeLimit in the currentQuestion string by stringifying it? No, state.ts has currentQuestion as string. 
+  // Let's store timeLimit in a new state variable or just return it. 
+  // Wait, the state doesn't have a timeLimit field yet. Let's add it to state or just append to currentQuestion? 
+  // Actually, we can just return it if we update InterviewState.
   return {
     currentQuestion: newQuestion,
     questionHistory: [newQuestion],
-    questionCount: 1
+    questionCount: 1,
+    timeLimit: timeLimit
   };
 };
 

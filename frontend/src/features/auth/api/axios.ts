@@ -12,8 +12,10 @@ export const apiClient = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // We rely on HTTP-only cookies for tokens now, 
-    // but if we were using local storage, we'd attach it here.
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -34,12 +36,18 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        const refreshToken = useAuthStore.getState().refreshToken;
         // Attempt to refresh token
-        await axios.post(
+        const response = await axios.post(
           `${apiClient.defaults.baseURL}/auth/refresh`,
-          {},
+          { refreshToken },
           { withCredentials: true }
         );
+
+        if (response.data?.data?.accessToken) {
+          useAuthStore.getState().setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+          originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+        }
 
         // Retry original request
         return apiClient(originalRequest);

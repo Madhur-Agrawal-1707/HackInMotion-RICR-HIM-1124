@@ -21,7 +21,7 @@ export const ResumeUpload: React.FC = () => {
     [uploadResume]
   );
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       "application/pdf": [".pdf"],

@@ -10,8 +10,8 @@ Difficulty: {difficulty}
 Candidate Weaknesses: {weakAreas}
 Candidate Strengths: {strongAreas}
 
-Previous Questions:
-{questionHistory}
+Previous Q&A:
+{qaHistory}
 
 Generate a clear, concise, and role-specific question that avoids repeating previous questions.
 `;

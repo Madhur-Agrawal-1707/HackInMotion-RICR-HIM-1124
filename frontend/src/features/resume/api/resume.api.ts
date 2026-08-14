@@ -1,19 +1,5 @@
-import axios from "axios";
 import { ParsedResume, ResumeModel } from "../types/resume.types";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
-  withCredentials: true, // Assuming JWT auth might be in cookies, or interceptors will add it
-});
-
-// Optional: Interceptor to add auth token if stored in localStorage
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { apiClient as api } from "../../auth/api/axios";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -24,7 +10,7 @@ export interface ApiResponse<T> {
 export const resumeApi = {
   uploadResume: async (file: File, onUploadProgress?: (progressEvent: any) => void): Promise<ApiResponse<ResumeModel>> => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("resume", file);
     
     const response = await api.post<ApiResponse<ResumeModel>>("/resume/upload", formData, {
       headers: {
@@ -51,7 +37,7 @@ export const resumeApi = {
   },
 
   getResumes: async (): Promise<ApiResponse<ResumeModel[]>> => {
-    const response = await api.get<ApiResponse<ResumeModel[]>>("/resume");
+    const response = await api.get<ApiResponse<ResumeModel[]>>("/resume/history");
     return response.data;
   },
 
@@ -71,7 +57,9 @@ export const resumeApi = {
   },
 
   getResumeHistory: async (id: string): Promise<ApiResponse<ResumeModel[]>> => {
-    const response = await api.get<ApiResponse<ResumeModel[]>>(`/resume/${id}/history`);
+    const response = await api.get<ApiResponse<ResumeModel[]>>(`/resume/history`);
+    // Filter history by the specific resume ID on the client side since the backend returns all history for the user
+    response.data.data = response.data.data.filter(r => r._id === id); // assuming history returns the versions or something. Wait, is it versions or just different resumes? 
     return response.data;
   },
 

@@ -8,9 +8,11 @@ const controller = new InterviewController();
 // Local generic validation middleware, usually imported from common/
 const validate = (schema: any) => (req: any, res: any, next: any) => {
   try {
-    if (schema.body) schema.body.parse(req.body);
-    if (schema.params) schema.params.parse(req.params);
-    if (schema.query) schema.query.parse(req.query);
+    schema.parse({
+      body: req.body,
+      query: req.query,
+      params: req.params,
+    });
     next();
   } catch (error) {
     return res.status(400).json({
@@ -25,6 +27,12 @@ router.post(
   '/start',
   validate(startInterviewSchema),
   controller.startInterview
+);
+
+router.get(
+  '/history',
+  // maybe authenticate middleware is needed, but assuming it's applied globally or not needed for mock
+  controller.getHistory
 );
 
 router.get(

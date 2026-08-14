@@ -57,8 +57,8 @@ export interface InterviewSession {
 export interface StartInterviewRequest {
   targetRole: string;
   experienceLevel: ExperienceLevel;
-  interviewType: string;
-  preferredDifficulty: Difficulty;
+  interviewType: string[];
+  difficulty: Difficulty;
   duration: number;
   domain: string;
   company?: string;

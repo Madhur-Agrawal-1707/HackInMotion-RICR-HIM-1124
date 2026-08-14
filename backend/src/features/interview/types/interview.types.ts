@@ -40,6 +40,7 @@ export interface IQuestion {
   topic: string;
   difficulty: string;
   sequence: number;
+  timeLimit?: number; // in seconds
   parentQuestionId?: string;
   isFollowUp: boolean;
   followUpType?: string;

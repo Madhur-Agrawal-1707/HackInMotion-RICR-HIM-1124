@@ -6,7 +6,6 @@ import { UnauthorizedError, ValidationError, NotFoundError } from '../../../util
 import { getAuth } from 'firebase-admin/auth';
 import { firebaseAppInitialized } from '../../../config/firebase.config';
 import { AuthProvider, UserRole } from '../../user/model/user.model';
-import { redisClient } from '../../../database/redis/connection';
 import { TokenService } from '../../../utils/token.service';
 import { ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto } from '../validation/auth.validation';
 
@@ -104,7 +103,7 @@ export class AuthService {
         throw new UnauthorizedError('User not found');
       }
 
-      // Check if refresh token matches the one stored in DB/Redis
+      // Check if refresh token matches the one stored in DB
       if (user.refreshToken !== refreshToken) {
          throw new UnauthorizedError('Invalid refresh token');
       }
@@ -120,8 +119,6 @@ export class AuthService {
 
   async logout(userId: string) {
     await this.userRepository.updateById(userId, { $unset: { refreshToken: 1 } });
-    // Invalidate session in Redis if applicable
-    await redisClient.del(`session:${userId}`);
   }
 
   async changePassword(userId: string, data: ChangePasswordDto) {
@@ -193,7 +190,5 @@ export class AuthService {
   private async storeRefreshToken(userId: string, token: string) {
     // Store in MongoDB
     await this.userRepository.updateById(userId, { refreshToken: token });
-    // Cache in Redis for quick session checking (optional based on rules, prompt said "Use Redis for Session Cache")
-    await redisClient.set(`session:${userId}`, token, { EX: 7 * 24 * 60 * 60 }); // 7 days
   }
 }

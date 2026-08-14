@@ -88,4 +88,23 @@ export class InterviewController {
       });
     }
   };
+
+  public getHistory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.id || 'mock-user-id';
+      const history = await this.service.getHistory(userId);
+
+      res.status(200).json({
+        success: true,
+        message: "Interview history retrieved",
+        data: history
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to retrieve history",
+        error: {}
+      });
+    }
+  };
 }

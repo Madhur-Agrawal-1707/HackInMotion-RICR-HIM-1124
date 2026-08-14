@@ -13,6 +13,7 @@ export const InterviewState = Annotation.Root({
   
   currentTopic: Annotation<string | null>(),
   currentQuestion: Annotation<string | null>(),
+  timeLimit: Annotation<number | null>(),
   
   questionHistory: Annotation<string[]>({
     reducer: (curr, next) => curr.concat(next),

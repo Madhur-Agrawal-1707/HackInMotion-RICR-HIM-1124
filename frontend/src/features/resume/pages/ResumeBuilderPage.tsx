@@ -11,7 +11,7 @@ export const ResumeBuilderPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<"edit" | "preview" | "analysis">("edit");
   
-  const { data: resume, isLoading, error } = useResume(id || "");
+  const { data: resume, isLoading, error } = useResume(id === "new" ? "" : (id || ""));
   const { mutate: analyzeResume, isPending: isAnalyzing } = useAnalyzeResume();
 
   useEffect(() => {
