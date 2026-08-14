@@ -21,7 +21,7 @@ export const submitAnswerSchema = z.object({
   body: z.object({
     questionId: z.string().min(1, "Question ID is required"),
     answerText: z.string().optional(),
-    duration: z.number().min(0, "Duration must be non-negative"),
+    duration: z.number().min(0, "Duration must be non-negative").optional(),
     isSkipped: z.boolean().default(false)
   })
 });

@@ -21,7 +21,8 @@ const getModel = () => {
           relevance: 5,
           needsFollowUp: false,
           recommendedDifficulty: "Medium",
-          timeLimit: 60
+          timeLimit: 60,
+          questionText: `Mock Question ${Math.floor(Math.random() * 1000)}: How would you approach this problem?`
         })
       })
     } as any;
@@ -72,7 +73,7 @@ export const generateQuestionNode = async (state: InterviewStateType) => {
     .replace("{difficulty}", state.difficulty)
     .replace("{weakAreas}", state.weakAreas.join(", "))
     .replace("{strongAreas}", state.strongAreas.join(", "))
-    .replace("{qaHistory}", state.questionHistory.map((q, i) => `Q: ${q}\nA: ${state.answerHistory[i]?.text || 'No answer'}`).join("\n\n"));
+    .replace("{qaHistory}", state.questionHistory.map((q, i) => `Q: ${q}\nA: ${state.answerHistory[i]?.answerText || 'No answer'}`).join("\n\n"));
 
   const questionSchema = z.object({
     questionText: z.string().describe("The interview question text."),
@@ -103,7 +104,7 @@ export const generateQuestionNode = async (state: InterviewStateType) => {
 export const evaluateAnswerNode = async (state: InterviewStateType) => {
   const latestAnswer = state.answerHistory[state.answerHistory.length - 1];
   
-  if (!latestAnswer || !latestAnswer.text || latestAnswer.text.trim() === "") {
+  if (!latestAnswer || !latestAnswer.answerText || latestAnswer.answerText.trim() === "") {
      return {
        weakAreas: [state.currentTopic || "Unknown"],
        skippedQuestions: [state.currentQuestion || "Unknown"]
@@ -112,7 +113,7 @@ export const evaluateAnswerNode = async (state: InterviewStateType) => {
 
   const prompt = ANSWER_EVALUATION_PROMPT
     .replace("{questionText}", state.currentQuestion || "")
-    .replace("{answerText}", latestAnswer.text)
+    .replace("{answerText}", latestAnswer.answerText)
     .replace("{difficulty}", state.difficulty);
 
   const evaluationSchema = z.object({
