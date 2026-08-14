@@ -30,7 +30,7 @@ describe('useInterviewStore', () => {
     };
 
     act(() => {
-      result.current.setSession(mockSession);
+      result.current.setSession(mockSession as any);
     });
 
     expect(result.current.currentSession).toEqual(mockSession);
@@ -47,7 +47,7 @@ describe('useInterviewStore', () => {
     };
 
     act(() => {
-      result.current.setCurrentQuestion(mockQuestion);
+      result.current.setCurrentQuestion(mockQuestion as any);
     });
 
     expect(result.current.currentQuestion).toEqual(mockQuestion);

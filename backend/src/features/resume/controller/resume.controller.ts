@@ -76,7 +76,7 @@ export class ResumeController {
 
   getResumeById = async (req: AuthRequest, res: Response) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const resume = await this.resumeService.getResumeById(id);
       
       res.status(200).json({ success: true, message: 'Fetched resume', data: resume });
@@ -87,7 +87,7 @@ export class ResumeController {
 
   updateResume = async (req: AuthRequest, res: Response) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const updateData = req.body;
       const resume = await this.resumeService.updateResume(id, updateData);
       
@@ -99,7 +99,7 @@ export class ResumeController {
 
   deleteResume = async (req: AuthRequest, res: Response) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       await this.resumeService.deleteResume(id);
       
       res.status(200).json({ success: true, message: 'Resume deleted successfully' });

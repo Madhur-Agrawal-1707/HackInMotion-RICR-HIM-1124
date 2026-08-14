@@ -3,19 +3,19 @@ import { RoadmapState } from './roadmapAgent';
 export const projectGenerator = async (state: typeof RoadmapState.State) => {
   const phases = state.phases || [];
   
-  if (phases.length > 0) {
-    phases[0].projects = [
+  phases.forEach((phase) => {
+    phase.projects = [
       {
-        title: 'Distributed Key-Value Store',
-        description: 'Build a simplified Redis clone with replication.',
-        skills: ['System Design', 'Concurrency', 'Networking'],
-        requirements: ['Support SET/GET', 'Implement Master-Slave replication'],
-        deliverables: ['GitHub Repo', 'Architecture Diagram'],
-        difficulty: 'ADVANCED',
-        estimatedDuration: '2 weeks'
+        title: `Build a ${phase.skills[0] || 'Core'} Module`,
+        description: `Create a small project focusing heavily on ${phase.skills[0] || 'core concepts'} to solidify understanding.`,
+        skills: phase.skills,
+        requirements: [`Demonstrate mastery of ${phase.skills[0] || 'concepts'}`],
+        deliverables: ['GitHub Repo'],
+        difficulty: 'INTERMEDIATE',
+        estimatedDuration: '1 week'
       }
     ];
-  }
+  });
 
   return { phases };
 };

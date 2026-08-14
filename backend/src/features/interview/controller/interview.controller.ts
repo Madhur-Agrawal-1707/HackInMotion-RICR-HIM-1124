@@ -41,6 +41,7 @@ export class InterviewController {
         data: question
       });
     } catch (error: any) {
+      console.error("Error in getNextQuestion:", error);
       res.status(500).json({
         success: false,
         message: error.message || "Failed to get next question",
@@ -84,6 +85,25 @@ export class InterviewController {
       res.status(404).json({
         success: false,
         message: error.message || "Session not found",
+        error: {}
+      });
+    }
+  };
+
+  public getHistory = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.id || 'mock-user-id';
+      const history = await this.service.getHistory(userId);
+
+      res.status(200).json({
+        success: true,
+        message: "Interview history retrieved",
+        data: history
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to retrieve history",
         error: {}
       });
     }

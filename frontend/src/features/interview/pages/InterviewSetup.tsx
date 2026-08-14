@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useStartInterview } from '../api/interviewApi';
-import type { StartInterviewRequest } from '../types/interview';
+import type { StartInterviewRequest, ExperienceLevel, Difficulty } from '../types/interview';
 
 export const InterviewSetup: React.FC = () => {
+  const navigate = useNavigate();
   const startMutation = useStartInterview();
-  const [formData, setFormData] = useState<StartInterviewRequest>({
+  const [formData, setFormData] = useState({
     targetRole: '',
     experienceLevel: 'Fresher',
     interviewType: 'Technical',
-    preferredDifficulty: 'Medium',
+    difficulty: 'Medium',
     duration: 30,
     domain: '',
     company: '',
@@ -21,18 +24,31 @@ export const InterviewSetup: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    startMutation.mutate(formData, {
+    const requestData: StartInterviewRequest = {
+      ...formData,
+      interviewType: [formData.interviewType],
+      experienceLevel: formData.experienceLevel as ExperienceLevel,
+      difficulty: formData.difficulty as Difficulty,
+      duration: Number(formData.duration)
+    };
+    startMutation.mutate(requestData, {
       onSuccess: (data) => {
-        // Redirect to interview session or handle start
-        console.log('Interview Started', data);
+        // Navigate to the live interview session
+        navigate(`/interviews/live/${data._id}`);
       }
     });
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-sm border border-gray-200 mt-10">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Setup New Interview</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-2xl mx-auto p-6 mt-10">
+      <div className="flex items-center gap-4 mb-6">
+        <Link to="/interviews" className="p-2 hover:bg-gray-100 rounded-full transition-colors bg-white shadow-sm border border-gray-200">
+          <ArrowLeft className="w-5 h-5 text-gray-600" />
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-800">Setup New Interview</h1>
+      </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700 mb-1">Target Role</label>
@@ -80,7 +96,7 @@ export const InterviewSetup: React.FC = () => {
           </div>
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700 mb-1">Starting Difficulty</label>
-            <select name="preferredDifficulty" value={formData.preferredDifficulty} onChange={handleChange} className="p-2 border rounded-md bg-white">
+            <select name="difficulty" value={formData.difficulty} onChange={handleChange} className="p-2 border rounded-md bg-white">
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
               <option value="Hard">Hard</option>
@@ -93,6 +109,7 @@ export const InterviewSetup: React.FC = () => {
           {startMutation.isPending ? 'Starting...' : 'Start Interview'}
         </button>
       </form>
+      </div>
     </div>
   );
 };

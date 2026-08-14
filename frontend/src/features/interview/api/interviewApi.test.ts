@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as interviewApi from './interviewApi';
 
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn() as any;
 
 describe('interviewApi', () => {
   beforeEach(() => {

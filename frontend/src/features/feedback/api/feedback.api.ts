@@ -1,27 +1,15 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import type { FeedbackReport, ApiResponse } from '../types';
-
-// Mock API base URL. In real app, from environment config.
-const API_URL = 'http://localhost:3000/api/feedback';
+import type { FeedbackReport } from '../types';
+import { apiClient } from '../../auth/api/axios';
 
 const fetchFeedback = async (interviewId: string): Promise<FeedbackReport> => {
-  const response = await fetch(`${API_URL}/interview/${interviewId}`);
-  const data: ApiResponse<FeedbackReport> = await response.json();
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-  return data.data;
+  const response = await apiClient.get(`/feedback/interview/${interviewId}`);
+  return response.data.data;
 };
 
 const generateFeedback = async (interviewId: string): Promise<FeedbackReport> => {
-  const response = await fetch(`${API_URL}/generate/${interviewId}`, {
-    method: 'POST',
-  });
-  const data: ApiResponse<FeedbackReport> = await response.json();
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-  return data.data;
+  const response = await apiClient.post(`/feedback/generate/${interviewId}`);
+  return response.data.data;
 };
 
 export const useFeedback = (interviewId: string) => {
@@ -29,6 +17,7 @@ export const useFeedback = (interviewId: string) => {
     queryKey: ['feedback', interviewId],
     queryFn: () => fetchFeedback(interviewId),
     enabled: !!interviewId,
+    retry: false, // Don't retry, fail immediately so we can generate
   });
 };
 

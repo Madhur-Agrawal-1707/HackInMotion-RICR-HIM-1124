@@ -20,7 +20,7 @@ export const UploadResumePage: React.FC = () => {
     // If upload is successful and we have a resume ID, redirect to builder or analysis
     if (uploadState === "success" && currentResume) {
       const timer = setTimeout(() => {
-        navigate(`/resume/${currentResume._id}/analyze`); // or builder
+        navigate(`/resume/build/${currentResume._id}`);
       }, 1500);
       return () => clearTimeout(timer);
     }

@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '../utils/jwt.service';
 import { UnauthorizedError, ForbiddenError } from '../utils/errors';
-import { redisClient } from '../database/redis/connection';
 
 declare global {
   namespace Express {
     interface Request {
       user?: {
         userId: string;
-        role: string;
+        role?: string;
+        email?: string;
+        [key: string]: any;
       };
     }
   }
@@ -24,12 +25,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     const decoded = JwtService.verifyAccessToken(token);
     
-    // Check if session exists/is valid in Redis (optional extra security)
-    const sessionToken = await redisClient.get(`session:${decoded.userId}`);
-    if (!sessionToken) {
-       throw new UnauthorizedError('Session expired');
-    }
-
     req.user = decoded;
     next();
   } catch (error) {
@@ -43,7 +38,7 @@ export const authorize = (roles: string[]) => {
       return next(new UnauthorizedError('Not authenticated'));
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!req.user.role || !roles.includes(req.user.role)) {
       return next(new ForbiddenError('You do not have permission to perform this action'));
     }
 

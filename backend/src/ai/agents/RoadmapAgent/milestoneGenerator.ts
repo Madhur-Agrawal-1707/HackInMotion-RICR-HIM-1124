@@ -4,17 +4,17 @@ import { IMilestone } from '../../../features/roadmap/types/roadmap.types';
 export const milestoneGenerator = async (state: typeof RoadmapState.State) => {
   const phases = state.phases || [];
   
-  if (phases.length > 0) {
-    phases[0].milestones = [
+  phases.forEach((phase, index) => {
+    phase.milestones = [
       {
-        title: 'Complete System Design Basics',
-        description: 'Understand load balancing and caching.',
-        criteria: ['Finish URL shortener practice', 'Read chapters 1-3 of DDIA'],
-        targetDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks from now
+        title: `Complete ${phase.skills[0] || 'Core Concepts'} Phase`,
+        description: `Demonstrate proficiency in ${phase.skills[0] || 'core concepts'} through practical exercises.`,
+        criteria: [`Finish all practice tasks for ${phase.skills[0] || 'the phase'}`, `Build the module project`],
+        targetDate: new Date(Date.now() + (index + 1) * 14 * 24 * 60 * 60 * 1000), // Adds 2 weeks per phase
         status: 'NOT_STARTED'
       }
     ];
-  }
+  });
 
   // Also set top-level milestones based on phase milestones
   const topLevelMilestones: IMilestone[] = [];

@@ -1,31 +1,30 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { InterviewSession, StartInterviewRequest, AnswerData } from '../types/interview';
+import { apiClient } from '../../auth/api/axios';
 
-// Mock API functions for now
 const fetchSession = async (sessionId: string): Promise<InterviewSession> => {
-  const res = await fetch(`/api/interviews/${sessionId}`);
-  if (!res.ok) throw new Error('Failed to fetch session');
-  return res.json();
+  const res = await apiClient.get(`/interview/${sessionId}`);
+  return res.data.data;
 };
 
 const startSession = async (data: StartInterviewRequest): Promise<InterviewSession> => {
-  const res = await fetch('/api/interviews/start', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to start session');
-  return res.json();
+  const res = await apiClient.post('/interview/start', data);
+  return res.data.data;
 };
 
 const submitAnswer = async ({ sessionId, answer }: { sessionId: string; answer: Partial<AnswerData> }) => {
-  const res = await fetch(`/api/interviews/${sessionId}/answers`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(answer),
-  });
-  if (!res.ok) throw new Error('Failed to submit answer');
-  return res.json(); // Returns next question or session completion status
+  const res = await apiClient.post(`/interview/${sessionId}/answer`, answer);
+  return res.data.data; // Returns next question or session completion status
+};
+
+const fetchHistory = async (): Promise<InterviewSession[]> => {
+  const res = await apiClient.get('/interview/history');
+  return res.data.data;
+};
+
+const fetchNextQuestion = async (sessionId: string): Promise<any> => {
+  const res = await apiClient.get(`/interview/${sessionId}/next-question`);
+  return res.data.data;
 };
 
 // Hooks
@@ -46,5 +45,21 @@ export const useStartInterview = () => {
 export const useSubmitAnswer = () => {
   return useMutation({
     mutationFn: submitAnswer,
+  });
+};
+
+export const useInterviewHistory = () => {
+  return useQuery({
+    queryKey: ['interview-history'],
+    queryFn: fetchHistory,
+  });
+};
+
+export const useNextQuestion = (sessionId: string) => {
+  return useQuery({
+    queryKey: ['interview-next-question', sessionId],
+    queryFn: () => fetchNextQuestion(sessionId),
+    enabled: !!sessionId,
+    refetchOnWindowFocus: false, // Don't fetch multiple times automatically
   });
 };

@@ -12,6 +12,7 @@ const QuestionSchema = new Schema({
   topic: { type: String, required: true },
   difficulty: { type: String, required: true },
   sequence: { type: Number, required: true },
+  timeLimit: { type: Number },
   parentQuestionId: { type: String, default: null },
   isFollowUp: { type: Boolean, default: false },
   followUpType: { type: String, default: null },

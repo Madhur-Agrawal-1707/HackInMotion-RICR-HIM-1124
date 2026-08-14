@@ -11,7 +11,7 @@ export const useAuth = () => {
     mutationFn: (data: RegisterFormValues) => authApi.register(data),
     onSuccess: (data) => {
       if (data.success && data.data?.user) {
-        storeLogin(data.data.user);
+        storeLogin(data.data.user, data.data.accessToken, data.data.refreshToken);
       }
     },
   });
@@ -20,7 +20,7 @@ export const useAuth = () => {
     mutationFn: (data: LoginFormValues) => authApi.login(data),
     onSuccess: (data) => {
       if (data.success && data.data?.user) {
-        storeLogin(data.data.user);
+        storeLogin(data.data.user, data.data.accessToken, data.data.refreshToken);
       }
     },
   });
@@ -29,7 +29,7 @@ export const useAuth = () => {
     mutationFn: (idToken: string) => authApi.googleLogin(idToken),
     onSuccess: (data) => {
       if (data.success && data.data?.user) {
-        storeLogin(data.data.user);
+        storeLogin(data.data.user, data.data.accessToken, data.data.refreshToken);
       }
     },
   });

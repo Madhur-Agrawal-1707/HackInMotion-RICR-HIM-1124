@@ -1,7 +1,7 @@
 import { InterviewRepository } from '../repository/interview.repository';
 import { IInterviewSession, InterviewStatus, IQuestion, IAnswer } from '../types/interview.types';
-// Dummy import for AI Agent
-// import { InterviewAgent } from '../../../ai/agents/InterviewAgent';
+import { generateQuestionNode, evaluateAnswerNode } from '../../../ai/agents/InterviewAgent/nodes';
+import { InterviewStateType } from '../../../ai/agents/InterviewAgent/state';
 
 export class InterviewService {
   private repository: InterviewRepository;
@@ -45,22 +45,48 @@ export class InterviewService {
       await this.repository.updateSessionStatus(sessionId, InterviewStatus.IN_PROGRESS, { startedAt: new Date() });
     }
 
-    // Dummy logic to simulate AI agent generating a question
-    // const nextQuestion = await InterviewAgent.generateQuestion(sessionId);
+    const state: InterviewStateType = {
+      sessionId: session._id.toString(),
+      userId: session.userId,
+      resumeId: session.resumeId,
+      targetRole: session.targetRole,
+      experienceLevel: session.experienceLevel,
+      interviewType: session.interviewType[0] || 'Technical',
+      company: session.company,
+      domain: session.domain,
+      difficulty: session.difficulty,
+      currentTopic: session.topicsCovered[session.topicsCovered.length - 1] || null,
+      currentQuestion: null,
+      timeLimit: null,
+      questionHistory: session.questions.map(q => q.questionText),
+      answerHistory: session.answers,
+      skippedQuestions: [],
+      strongAreas: session.strongAreas,
+      weakAreas: session.weakAreas,
+      topicsCovered: session.topicsCovered,
+      topicsRemaining: [],
+      candidateSignals: [],
+      questionCount: session.questionCount,
+      maxQuestions: 10,
+      status: session.status
+    };
+
+    const result = await generateQuestionNode(state);
     
-    const dummyQuestion: IQuestion = {
+    const nextQuestion: IQuestion = {
       questionId: `q_${Date.now()}`,
-      questionText: "Can you explain how React reconciliation works?",
+      questionText: result.currentQuestion || "Could you tell me about yourself?",
       type: "Technical",
       topic: session.domain,
       difficulty: session.difficulty,
       sequence: session.questionCount + 1,
+      timeLimit: result.timeLimit || 120, // default to 120s if not provided
       isFollowUp: false,
       createdAt: new Date()
     };
 
-    await this.repository.addQuestion(sessionId, dummyQuestion);
-    return dummyQuestion;
+    await this.repository.addQuestion(sessionId, nextQuestion);
+    return nextQuestion;
   }
 
   /**
@@ -90,15 +116,53 @@ export class InterviewService {
     await this.repository.addAnswer(sessionId, answer);
 
     // Trigger AI evaluation and context update
-    // const evaluation = await InterviewAgent.evaluateAnswer(sessionId, answer);
+    const state: InterviewStateType = {
+      sessionId: session._id.toString(),
+      userId: session.userId,
+      resumeId: session.resumeId,
+      targetRole: session.targetRole,
+      experienceLevel: session.experienceLevel,
+      interviewType: session.interviewType[0] || 'Technical',
+      company: session.company,
+      domain: session.domain,
+      difficulty: session.difficulty,
+      currentTopic: session.topicsCovered[session.topicsCovered.length - 1] || null,
+      currentQuestion: session.questions.find(q => q.questionId === answerData.questionId)?.questionText || null,
+      timeLimit: null,
+      questionHistory: session.questions.map(q => q.questionText),
+      answerHistory: [...session.answers, answer], // include the new answer
+      skippedQuestions: [],
+      strongAreas: session.strongAreas,
+      weakAreas: session.weakAreas,
+      topicsCovered: session.topicsCovered,
+      topicsRemaining: [],
+      candidateSignals: [],
+      questionCount: session.questionCount,
+      maxQuestions: 10,
+      status: session.status
+    };
+
+    let evaluationResult = null;
+    try {
+      const evalNodeResult = await evaluateAnswerNode(state);
+      if (evalNodeResult.candidateSignals && evalNodeResult.candidateSignals.length > 0) {
+        evaluationResult = evalNodeResult.candidateSignals[evalNodeResult.candidateSignals.length - 1];
+        
+        // Update the session's difficulty based on evaluation
+        if (evalNodeResult.difficulty) {
+          await this.repository.updateSessionStatus(sessionId, session.status, { difficulty: evalNodeResult.difficulty });
+        }
+      }
+    } catch (e) {
+      console.error("Evaluation failed", e);
+    }
     
     return {
       success: true,
       message: "Answer submitted successfully",
-      evaluation: {
-        // dummy evaluation
+      evaluation: evaluationResult || {
         needsFollowUp: false,
-        recommendedDifficulty: "Medium",
+        recommendedDifficulty: session.difficulty,
         recommendedTopic: session.domain
       }
     };
@@ -113,5 +177,12 @@ export class InterviewService {
       throw new Error("Session not found");
     }
     return session;
+  }
+
+  /**
+   * Retrieves all sessions for a user
+   */
+  async getHistory(userId: string): Promise<IInterviewSession[]> {
+    return await this.repository.getSessionsByUserId(userId);
   }
 }

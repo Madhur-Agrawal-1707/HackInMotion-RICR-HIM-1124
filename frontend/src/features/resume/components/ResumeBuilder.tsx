@@ -30,7 +30,7 @@ export const ResumeBuilder: React.FC = () => {
   };
 
   const { register, control, handleSubmit, formState: { errors }, reset } = useForm<ParsedResume>({
-    resolver: zodResolver(parsedResumeSchema),
+    resolver: zodResolver(parsedResumeSchema as any) as any,
     defaultValues,
   });
 
@@ -40,10 +40,7 @@ export const ResumeBuilder: React.FC = () => {
     }
   }, [parsedResume, reset]);
 
-  const { fields: eduFields, append: appendEdu, remove: removeEdu } = useFieldArray({
-    control,
-    name: "education",
-  });
+  // Removed unused eduFields
 
   const { fields: expFields, append: appendExp, remove: removeExp } = useFieldArray({
     control,
