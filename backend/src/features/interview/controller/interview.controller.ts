@@ -41,6 +41,7 @@ export class InterviewController {
         data: question
       });
     } catch (error: any) {
+      console.error("Error in getNextQuestion:", error);
       res.status(500).json({
         success: false,
         message: error.message || "Failed to get next question",

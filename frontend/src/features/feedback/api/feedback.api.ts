@@ -17,6 +17,7 @@ export const useFeedback = (interviewId: string) => {
     queryKey: ['feedback', interviewId],
     queryFn: () => fetchFeedback(interviewId),
     enabled: !!interviewId,
+    retry: false, // Don't retry, fail immediately so we can generate
   });
 };
 

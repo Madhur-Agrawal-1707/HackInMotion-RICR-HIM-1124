@@ -1,25 +1,47 @@
-import React from 'react';
-import { useFeedback } from '../api/feedback.api';
+import React, { useEffect } from 'react';
+import { useFeedback, useGenerateFeedback } from '../api/feedback.api';
 import { ScoreCard } from '../components/ScoreCard';
 import { PerformanceChart } from '../components/PerformanceChart';
 import { StrengthList, WeaknessList, RecommendationList } from '../components/ListComponents';
 import { Trophy, Code, BrainCircuit, MessageSquare, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const FeedbackDashboard: React.FC<{ interviewId: string }> = ({ interviewId }) => {
-  const { data: report, isLoading, error } = useFeedback(interviewId);
+  const navigate = useNavigate();
+  const { data: report, isLoading: isFetching, error, refetch } = useFeedback(interviewId);
+  const generateMutation = useGenerateFeedback();
+
+  useEffect(() => {
+    // If we fail to fetch (likely 404 because not generated), trigger generation
+    if (error && !report && !generateMutation.isPending && !generateMutation.isSuccess && !generateMutation.isError) {
+      generateMutation.mutate(interviewId, {
+        onSuccess: () => refetch() // refetch the report once generation is done
+      });
+    }
+  }, [error, report, interviewId, generateMutation, refetch]);
+
+  const isLoading = isFetching || generateMutation.isPending;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[500px]">
+      <div className="flex flex-col items-center justify-center min-h-[500px] space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <p className="text-gray-600 animate-pulse">Generating your personalized feedback report...</p>
       </div>
     );
   }
 
-  if (error || !report) {
+  if ((error && generateMutation.isError) || !report) {
     return (
       <div className="p-8 text-center text-red-500">
-        Failed to load feedback report. {error?.message}
+        Failed to load or generate feedback report.
+        <br />
+        <button 
+          onClick={() => navigate('/interviews')}
+          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Return Home
+        </button>
       </div>
     );
   }
@@ -40,7 +62,7 @@ export const FeedbackDashboard: React.FC<{ interviewId: string }> = ({ interview
           <p className="text-gray-500 mt-2">Detailed analysis of your recent interview performance</p>
         </div>
         <button 
-          onClick={() => window.open(`http://localhost:3000/api/feedback/${interviewId}/pdf`, '_blank')}
+          onClick={() => window.open(`http://localhost:5000/api/feedback/${interviewId}/pdf`, '_blank')}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
         >
           <Download className="w-5 h-5" /> Download PDF

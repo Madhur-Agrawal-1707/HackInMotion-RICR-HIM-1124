@@ -8,7 +8,62 @@ import { z } from 'zod';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 
 // Mock LLM setup. In a real scenario, configure this with the actual provider.
-const getLLM = () => new ChatOpenAI({ modelName: 'gpt-4o', temperature: 0 });
+const getLLM = (state?: FeedbackGraphStateType) => {
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.warn("No OPENROUTER_API_KEY found, using mock model for feedback.");
+    return {
+      invoke: async () => {
+        const score = state?.scores?.overallScore || 75;
+        const comment = score > 80 ? "excellent potential" : (score > 60 ? "solid fundamentals" : "needs improvement");
+        return { content: `Mock Feedback Summary: The candidate demonstrated ${comment}. They answered ${state?.interviewData?.answers?.filter(a=>!a.isSkipped).length || 0} out of ${state?.interviewData?.questions?.length || 0} questions.` };
+      },
+      withStructuredOutput: (schema: any) => ({
+        invoke: async () => {
+          // Check what we're mocking based on the function that calls it
+          if (schema.shape.evaluatedAnswers && state) {
+            const questions = state.interviewData.questions || [];
+            const answers = state.interviewData.answers || [];
+            
+            const evaluatedAnswers = questions.map((q: any, i: number) => {
+              const a = answers.find(ans => ans.questionId === q.questionId);
+              const isSkipped = !a || a.isSkipped || a.answerText.trim() === '';
+              return {
+                questionId: q.questionId,
+                score: isSkipped ? 0 : Math.floor(Math.random() * 40) + 60, // 60-100
+                feedback: isSkipped ? 'Question was skipped.' : `Answered reasonably well regarding ${q.topic || 'the topic'}.`,
+                strengths: isSkipped ? [] : ['Attempted the question', 'Relevant context'],
+                weaknesses: isSkipped ? ['Did not answer'] : ['Could provide more detail']
+              };
+            });
+            return { evaluatedAnswers };
+          }
+          if (schema.shape.recommendations && state) {
+            return {
+              recommendations: [
+                { category: 'General', actionableStep: 'Review the areas where questions were skipped.' },
+                { category: 'Technical', actionableStep: 'Practice explaining concepts more thoroughly.' }
+              ]
+            };
+          }
+          return {};
+        }
+      })
+    } as any;
+  }
+  return new ChatOpenAI({ 
+    modelName: 'gpt-4o', 
+    temperature: 0,
+    maxTokens: 2500,
+    apiKey: process.env.OPENROUTER_API_KEY,
+    configuration: {
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        "HTTP-Referer": "http://localhost:5176",
+        "X-Title": "HackInMotion",
+      }
+    }
+  });
+};
 
 export const loadInterviewNode = async (state: FeedbackGraphStateType): Promise<Partial<FeedbackGraphStateType>> => {
   // In a real scenario, we might fetch the interview from a service here if not already provided.
@@ -23,7 +78,7 @@ export const loadCandidateContextNode = async (state: FeedbackGraphStateType): P
 import { IFeedbackReport } from '../../../features/feedback/model/feedback.model';
 
 export const analyzeAnswersNode = async (state: FeedbackGraphStateType): Promise<Partial<FeedbackGraphStateType>> => {
-  const llm = getLLM();
+  const llm = getLLM(state);
   const evaluationSchema = z.object({
     evaluatedAnswers: z.array(z.object({
       questionId: z.string(),
@@ -91,7 +146,7 @@ export const identifySkillGapsNode = async (state: FeedbackGraphStateType): Prom
 };
 
 export const generateRecommendationsNode = async (state: FeedbackGraphStateType): Promise<Partial<FeedbackGraphStateType>> => {
-  const llm = getLLM();
+  const llm = getLLM(state);
   const recSchema = z.object({
     recommendations: z.array(z.object({
       category: z.string(),
@@ -114,7 +169,7 @@ export const generateRecommendationsNode = async (state: FeedbackGraphStateType)
 };
 
 export const generateSummaryNode = async (state: FeedbackGraphStateType): Promise<Partial<FeedbackGraphStateType>> => {
-  const llm = getLLM();
+  const llm = getLLM(state);
   
   const prompt = SUMMARY_PROMPT
     .replace('{targetRole}', state.interviewData.targetRole)

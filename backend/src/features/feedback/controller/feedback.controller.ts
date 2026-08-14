@@ -3,28 +3,35 @@ import { feedbackService } from '../service/feedback.service';
 import { GenerateFeedbackSchema } from '../validation/feedback.schema';
 import { generateFeedbackPDF } from '../../../utils/pdfGenerator';
 import { InterviewData } from '../types';
+import { InterviewRepository } from '../../interview/repository/interview.repository';
+
+const interviewRepo = new InterviewRepository();
 
 export class FeedbackController {
   async generateFeedback(req: Request, res: Response) {
     try {
       const { interviewId } = GenerateFeedbackSchema.shape.params.parse(req.params);
       
-      // Mock fetching interview data since the Interview module isn't here
-      const mockInterviewData: InterviewData = {
+      const session = await interviewRepo.getSessionById(interviewId);
+      if (!session) {
+        return res.status(404).json({ success: false, message: 'Interview session not found' });
+      }
+
+      const realInterviewData: InterviewData = {
         interviewId,
-        userId: (req as any).user?.id || 'mockUserId',
-        targetRole: 'Software Engineer',
-        experienceLevel: 'Mid-Level',
-        interviewType: 'Technical',
-        questions: ['Explain closures in JS.'],
-        answers: ['Closures are functions that remember their outer scope.'],
-        topics: ['JavaScript'],
-        difficulty: 'Medium',
+        userId: session.userId,
+        targetRole: session.targetRole,
+        experienceLevel: session.experienceLevel,
+        interviewType: session.interviewType.join(', '),
+        questions: session.questions || [],
+        answers: session.answers || [],
+        topics: [session.domain],
+        difficulty: session.difficulty,
         codingSubmissions: [],
-        duration: 45
+        duration: session.duration || 45
       };
 
-      const feedback = await feedbackService.generateFeedback(interviewId, mockInterviewData);
+      const feedback = await feedbackService.generateFeedback(interviewId, realInterviewData);
       
       res.status(201).json({
         success: true,

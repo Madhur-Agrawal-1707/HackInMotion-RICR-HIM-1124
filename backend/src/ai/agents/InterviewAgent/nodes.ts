@@ -29,9 +29,10 @@ const getModel = () => {
   }
 
   return new ChatOpenAI({ 
-    modelName: "openai/gpt-oss-120b",
+    modelName: "openai/gpt-4o",
     temperature: 0.7,
-    openAIApiKey: process.env.OPENROUTER_API_KEY,
+    maxTokens: 1500,
+    apiKey: process.env.OPENROUTER_API_KEY,
     configuration: {
       baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
@@ -71,9 +72,9 @@ export const generateQuestionNode = async (state: InterviewStateType) => {
     .replace("{domain}", state.domain)
     .replace("{currentTopic}", state.currentTopic || "General")
     .replace("{difficulty}", state.difficulty)
-    .replace("{weakAreas}", state.weakAreas.join(", "))
-    .replace("{strongAreas}", state.strongAreas.join(", "))
-    .replace("{qaHistory}", state.questionHistory.map((q, i) => `Q: ${q}\nA: ${state.answerHistory[i]?.answerText || 'No answer'}`).join("\n\n"));
+    .replace("{weakAreas}", (state.weakAreas || []).join(", "))
+    .replace("{strongAreas}", (state.strongAreas || []).join(", "))
+    .replace("{qaHistory}", (state.questionHistory || []).map((q, i) => `Q: ${q}\nA: ${state.answerHistory?.[i]?.answerText || 'No answer'}`).join("\n\n"));
 
   const questionSchema = z.object({
     questionText: z.string().describe("The interview question text."),

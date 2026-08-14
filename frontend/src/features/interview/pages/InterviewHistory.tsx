@@ -34,31 +34,49 @@ export const InterviewHistory: React.FC = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Date & Time</th>
                 <th className="px-6 py-4">Role</th>
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Score</th>
+                <th className="px-6 py-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {history.map((item) => (
-                <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.targetRole}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{item.interviewType}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    {item.overallSignals ? "Eval Available" : "N/A"}
-                  </td>
-                </tr>
-              ))}
+              {history.map((item) => {
+                const dateObj = new Date(item.createdAt);
+                const isCompleted = item.status === 'COMPLETED';
+                return (
+                  <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="font-medium text-gray-900">{dateObj.toLocaleDateString()}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.targetRole}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(item.interviewType) ? item.interviewType.join(', ') : item.interviewType}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-right">
+                      {isCompleted ? (
+                        <button
+                          onClick={() => window.location.href = `/feedback/${item._id}`}
+                          className="text-indigo-600 hover:text-indigo-900 font-medium bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          View Feedback
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-xs">Incomplete</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

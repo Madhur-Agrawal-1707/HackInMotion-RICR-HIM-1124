@@ -6,7 +6,10 @@ export const Timer: React.FC<{ onTimeUp?: () => void }> = ({ onTimeUp }) => {
 
   useEffect(() => {
     if (timeRemaining <= 0) {
-      if (onTimeUp) onTimeUp();
+      if (onTimeUp && timeRemaining === 0) {
+        setTimeRemaining(-1);
+        onTimeUp();
+      }
       return;
     }
     const interval = setInterval(() => {
@@ -16,6 +19,7 @@ export const Timer: React.FC<{ onTimeUp?: () => void }> = ({ onTimeUp }) => {
   }, [timeRemaining, setTimeRemaining, onTimeUp]);
 
   const formatTime = (seconds: number) => {
+    if (seconds < 0) return '00:00';
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
