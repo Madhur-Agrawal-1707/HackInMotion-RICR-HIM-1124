@@ -61,7 +61,7 @@ const Dashboard: React.FC = () => {
     },
     {
       id: 'company',
-      title: 'Company Data',
+      title: 'Company Based Interview',
       desc: 'Prepare for specific companies.',
       icon: Building2,
       color: 'text-blue-400',

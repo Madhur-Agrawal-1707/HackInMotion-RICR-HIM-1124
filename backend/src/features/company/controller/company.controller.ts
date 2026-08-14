@@ -13,7 +13,13 @@ export class CompanyController {
       return res.status(200).json({
         success: true,
         message: 'Companies fetched successfully',
-        data: result,
+        data: {
+          items: result.data,
+          total: result.total,
+          page,
+          limit,
+          totalPages: Math.ceil(result.total / limit)
+        },
       });
     } catch (error: any) {
       return res.status(500).json({
@@ -65,10 +71,18 @@ export class CompanyController {
       const companyId = req.params.companyId as string;
       const query = getQuestionsQuerySchema.parse(req.query);
       const result = await companyService.getQuestions(companyId, query);
+      const limit = parseInt(query.limit || '10', 10);
+      const page = parseInt(query.page || '1', 10);
       return res.status(200).json({
         success: true,
         message: 'Questions fetched successfully',
-        data: result,
+        data: {
+          items: result.data,
+          total: result.total,
+          page,
+          limit,
+          totalPages: Math.ceil(result.total / limit)
+        },
       });
     } catch (error: any) {
       return res.status(400).json({
