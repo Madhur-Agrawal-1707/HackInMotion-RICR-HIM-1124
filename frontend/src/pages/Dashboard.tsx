@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/store/auth.store';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { useInterviewHistory } from '../features/interview/api/interviewApi';
 import { 
   FileText, 
   MonitorPlay, 
@@ -21,84 +22,36 @@ import {
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { logout } = useAuth();
+  const { data: history } = useInterviewHistory();
 
-  const quickActions = [
-    {
-      id: 'resume',
-      title: 'Resume Builder',
-      desc: 'Optimize your resume for ATS.',
-      icon: FileText,
-      color: 'text-purple-400',
-      bg: 'bg-purple-500/20',
-      link: '/resume'
-    },
-    {
-      id: 'interview',
-      title: 'Mock Interview',
-      desc: 'Start a live AI interview session.',
-      icon: MonitorPlay,
-      color: 'text-fuchsia-400',
-      bg: 'bg-fuchsia-500/20',
-      link: '/interviews/setup'
-    },
-    {
-      id: 'feedback',
-      title: 'Past Feedback',
-      desc: 'Review your recent performance.',
-      icon: MessageSquare,
-      color: 'text-pink-400',
-      bg: 'bg-pink-500/20',
-      link: '/feedback'
-    },
-    {
-      id: 'roadmap',
-      title: 'Career Roadmap',
-      desc: 'View your customized learning path.',
-      icon: Map,
-      color: 'text-indigo-400',
-      bg: 'bg-indigo-500/20',
-      link: '/roadmap'
-    },
-    {
-      id: 'company',
-      title: 'Company Based Interview',
-      desc: 'Prepare for specific companies.',
-      icon: Building2,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/20',
-      link: '/companies'
-    }
-  ];
+  // Dynamic Stats Calculation
+  const totalInterviews = history?.length || 0;
+  
+  let totalScore = 0;
+  let scoredAnswers = 0;
+  history?.forEach(session => {
+    session.answers?.forEach(ans => {
+      if (ans.answerQuality) {
+        totalScore += ans.answerQuality;
+        scoredAnswers++;
+      }
+    });
+  });
+  const avgScore = scoredAnswers > 0 ? `${Math.round((scoredAnswers / totalScore) * 100)}%` : 'N/A'; // Assuming answerQuality is 0-1
+  
+  const uniqueDates = new Set(history?.map(h => new Date(h.createdAt).toDateString()));
+  const streak = `${uniqueDates.size} Days`;
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'interview',
-      title: 'Google SDE II Mock Interview',
-      date: '2 days ago',
-      score: '85/100',
-      icon: MonitorPlay,
-      color: 'text-fuchsia-400'
-    },
-    {
-      id: 2,
-      type: 'resume',
-      title: 'Resume ATS Score Improved',
-      date: '3 days ago',
-      score: '92/100',
-      icon: FileText,
-      color: 'text-purple-400'
-    },
-    {
-      id: 3,
-      type: 'roadmap',
-      title: 'Completed System Design Phase',
-      date: '1 week ago',
-      score: '100%',
-      icon: Map,
-      color: 'text-indigo-400'
-    }
-  ];
+  const dynamicRecentActivity = history?.slice(0, 3).map((session) => ({
+    id: session._id,
+    type: 'interview',
+    title: `${session.targetRole} Mock Interview`,
+    date: new Date(session.createdAt).toLocaleDateString(),
+    score: session.status,
+    icon: MonitorPlay,
+    color: 'text-fuchsia-400',
+    link: `/feedback/${session._id}`
+  })) || [];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 font-sans flex">
@@ -116,7 +69,13 @@ const Dashboard: React.FC = () => {
         <div className="px-4 py-6 flex-1">
           <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Modules</h3>
           <nav className="space-y-2">
-            {quickActions.map(action => (
+            {[
+              { id: 'resume', title: 'Resume Builder', icon: FileText, color: 'text-purple-400', link: '/resume' },
+              { id: 'interview', title: 'Mock Interview', icon: MonitorPlay, color: 'text-fuchsia-400', link: '/interviews/setup' },
+              { id: 'feedback', title: 'Past Feedback', icon: MessageSquare, color: 'text-pink-400', link: '/feedback' },
+              { id: 'roadmap', title: 'Career Roadmap', icon: Map, color: 'text-indigo-400', link: '/roadmap' },
+              { id: 'company', title: 'Company Based Interview', icon: Building2, color: 'text-blue-400', link: '/companies' }
+            ].map(action => (
               <Link 
                 key={action.id} 
                 to={action.link}
@@ -175,7 +134,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-500">Total Interviews</p>
-                <p className="text-2xl font-bold text-white">12</p>
+                <p className="text-2xl font-bold text-white">{totalInterviews}</p>
               </div>
             </div>
             <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 flex items-center gap-4">
@@ -184,7 +143,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-500">Avg. Score</p>
-                <p className="text-2xl font-bold text-white">88%</p>
+                <p className="text-2xl font-bold text-white">{avgScore}</p>
               </div>
             </div>
             <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 flex items-center gap-4">
@@ -193,7 +152,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-500">Streak</p>
-                <p className="text-2xl font-bold text-white">4 Days</p>
+                <p className="text-2xl font-bold text-white">{streak}</p>
               </div>
             </div>
           </div>
@@ -202,7 +161,13 @@ const Dashboard: React.FC = () => {
           <div className="mb-12">
             <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {quickActions.map(action => (
+              {[
+                { id: 'resume', title: 'Resume Builder', desc: 'Optimize your resume for ATS.', icon: FileText, color: 'text-purple-400', bg: 'bg-purple-500/20', link: '/resume' },
+                { id: 'interview', title: 'Mock Interview', desc: 'Start a live AI interview session.', icon: MonitorPlay, color: 'text-fuchsia-400', bg: 'bg-fuchsia-500/20', link: '/interviews/setup' },
+                { id: 'feedback', title: 'Past Feedback', desc: 'Review your recent performance.', icon: MessageSquare, color: 'text-pink-400', bg: 'bg-pink-500/20', link: '/feedback' },
+                { id: 'roadmap', title: 'Career Roadmap', desc: 'View your customized learning path.', icon: Map, color: 'text-indigo-400', bg: 'bg-indigo-500/20', link: '/roadmap' },
+                { id: 'company', title: 'Company Based Interview', desc: 'Prepare for specific companies.', icon: Building2, color: 'text-blue-400', bg: 'bg-blue-500/20', link: '/companies' }
+              ].map(action => (
                 <Link key={action.id} to={action.link} className="bg-white/[0.03] border border-white/10 hover:border-white/20 rounded-[2rem] p-6 hover:-translate-y-1 transition-all group block">
                   <div className={`w-12 h-12 rounded-2xl ${action.bg} flex items-center justify-center mb-4`}>
                     <action.icon className={`w-6 h-6 ${action.color}`} />
@@ -222,8 +187,8 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="bg-white/[0.02] border border-white/5 rounded-[2rem] overflow-hidden">
-              {recentActivity.map((activity, index) => (
-                <div key={activity.id} className={`p-6 flex items-center gap-6 hover:bg-white/[0.02] transition-colors ${index !== recentActivity.length - 1 ? 'border-b border-white/5' : ''}`}>
+              {dynamicRecentActivity.length > 0 ? dynamicRecentActivity.map((activity, index) => (
+                <Link to={activity.link} key={activity.id} className={`p-6 flex items-center gap-6 hover:bg-white/[0.02] transition-colors ${index !== dynamicRecentActivity.length - 1 ? 'border-b border-white/5' : ''}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.color.replace('text', 'bg').replace('400', '500/20')}`}>
                     <activity.icon className={`w-5 h-5 ${activity.color}`} />
                   </div>
@@ -239,8 +204,10 @@ const Dashboard: React.FC = () => {
                   <div>
                     <ChevronRight className="w-5 h-5 text-slate-600" />
                   </div>
-                </div>
-              ))}
+                </Link>
+              )) : (
+                <div className="p-6 text-center text-slate-500">No recent activity yet. Complete an interview to see it here!</div>
+              )}
             </div>
           </div>
 
