@@ -3,18 +3,28 @@ import { GenerateRoadmapRequestDto, UpdateRoadmapProgressDto } from '../dto/road
 import { IRoadmapDocument } from '../model/roadmap.model';
 import { roadmapAgent } from '../../../ai/agents/RoadmapAgent/roadmapAgent';
 
+import { feedbackService } from '../../feedback/service/feedback.service';
+import { IFeedbackReport } from '../../feedback/model/feedback.model';
+
 export class RoadmapService {
   async generateRoadmap(userId: string, data: GenerateRoadmapRequestDto): Promise<IRoadmapDocument> {
     // 1. Fetch Resume Data (Mocked or real integration)
     // const resume = await resumeService.findById(data.resumeId);
 
     // 2. Fetch Feedback Data (Mocked or real integration)
-    // const feedback = await feedbackService.findById(data.interviewId);
+    let feedback: IFeedbackReport | null = null;
+    if (data.interviewId) {
+      feedback = await feedbackService.getFeedbackByInterviewId(data.interviewId);
+    }
 
     // 3. Call AI LangGraph Workflow
     const aiResult = await roadmapAgent.invoke({
       candidateProfile: {}, // Mock
-      interviewFeedback: {}, // Mock
+      interviewFeedback: feedback ? {
+        strengths: feedback.strengths,
+        weaknesses: feedback.weaknesses,
+        recommendations: feedback.recommendations
+      } : {},
       targetRole: data.targetRole,
       experienceLevel: data.experienceLevel,
       careerGoal: data.careerGoal,

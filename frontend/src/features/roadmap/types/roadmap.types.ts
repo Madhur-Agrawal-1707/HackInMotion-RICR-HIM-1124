@@ -80,4 +80,6 @@ export interface GenerateRoadmapParams {
   experienceLevel: string;
   careerGoal: string;
   preferredTimeline: string;
+  resumeId?: string;
+  interviewId?: string;
 }

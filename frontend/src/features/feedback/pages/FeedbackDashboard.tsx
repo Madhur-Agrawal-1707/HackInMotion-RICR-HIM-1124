@@ -6,10 +6,29 @@ import { StrengthList, WeaknessList, RecommendationList } from '../components/Li
 import { Trophy, Code, BrainCircuit, MessageSquare, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { useMutation } from '@tanstack/react-query';
+import { roadmapApi } from '../../roadmap/api/roadmap.api';
+import { Map } from 'lucide-react';
+
 export const FeedbackDashboard: React.FC<{ interviewId: string }> = ({ interviewId }) => {
   const navigate = useNavigate();
   const { data: report, isLoading: isFetching, error, refetch } = useFeedback(interviewId);
   const generateMutation = useGenerateFeedback();
+
+  const generateRoadmapMutation = useMutation({
+    mutationFn: async () => {
+      return await roadmapApi.generateRoadmap({
+        interviewId,
+        targetRole: 'Target Role', // Will be extracted in backend from session
+        experienceLevel: 'Mid-Level', // Will be extracted in backend
+        careerGoal: 'Improve skills based on feedback',
+        preferredTimeline: '3 months'
+      });
+    },
+    onSuccess: (data) => {
+      navigate(`/roadmap/${data._id}`);
+    }
+  });
 
   useEffect(() => {
     // If we fail to fetch (likely 404 because not generated), trigger generation
@@ -56,17 +75,27 @@ export const FeedbackDashboard: React.FC<{ interviewId: string }> = ({ interview
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Interview Feedback Report</h1>
           <p className="text-gray-500 mt-2">Detailed analysis of your recent interview performance</p>
         </div>
-        <button 
-          onClick={() => window.open(`http://localhost:5000/api/feedback/${interviewId}/pdf`, '_blank')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
-        >
-          <Download className="w-5 h-5" /> Download PDF
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button 
+            onClick={() => window.open(`http://localhost:5000/api/feedback/${interviewId}/pdf`, '_blank')}
+            className="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl font-medium transition-colors"
+          >
+            <Download className="w-5 h-5" /> Download PDF
+          </button>
+          <button 
+            onClick={() => generateRoadmapMutation.mutate()}
+            disabled={generateRoadmapMutation.isPending}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
+          >
+            <Map className="w-5 h-5" /> 
+            {generateRoadmapMutation.isPending ? 'Generating...' : 'Generate Roadmap'}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
